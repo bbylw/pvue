@@ -58,17 +58,18 @@ npm install
 启动本地开发服务并启用 Vite+ 极速热重载：
 ```bash
 npm run dev
-# 或直接使用全局 vp 指令
-vp dev
+# 或使用 npx 调用本地依赖中的 vp 命令
+npx vp dev
 ```
+*注：若想直接使用全局 `vp` 指令，可先全局安装：`npm install -g vite-plus`。*
 启动后在浏览器中访问 `http://localhost:3000/` 即可。
 
 ### 3. 生产环境编译
 编译并生成打包产物，输出至 `dist/` 目录：
 ```bash
 npm run build
-# 或直接使用全局 vp 指令
-vp build
+# 或使用 npx 调用本地依赖中的 vp 命令
+npx vp build
 ```
 
 ---
