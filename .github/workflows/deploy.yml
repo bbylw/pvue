@@ -69,7 +69,7 @@ jobs:
         uses: actions/deploy-pages@v4
 
   # ==========================================
-  # JOB 2：独立部署到 PinMe (IPFS 侦测与强推)
+  # JOB 2：独立部署到 PinMe (锁定 /home/runner 精准注入)
   # ==========================================
   deploy-to-pinme:
     runs-on: ubuntu-latest
@@ -104,20 +104,26 @@ jobs:
             DOMAIN=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]' | tr '/' '-')
           fi
           
-          # 2. 【核心诊断】直接去全局 node_modules 里抓取它的源码，看它到底把配置文件写在哪了
-          echo "=== 正在全盘侦测 PinMe 配置文件路径 ==="
-          PINME_CLI_PATH=$(which pinme)
-          echo "PinMe 绝对路径: $PINME_CLI_PATH"
-          # 扫描源码中关于文件写入、路径拼接的代码片段，扒出它的真身
-          find /usr/local/lib/node_modules/pinme/ -name "*.js" | xargs grep -E "set-appkey|config|fs\.write|path\.join|homedir" || true
-          echo "========================================"
-          
-          # 3. 广撒网保底机制：往当前工作目录写入可能被读取的配置文件
-          echo "{\"appKey\":\"$PINME_APPKEY\",\"appkey\":\"$PINME_APPKEY\"}" > ./config.json
-          echo "{\"appKey\":\"$PINME_APPKEY\",\"appkey\":\"$PINME_APPKEY\"}" > ./.pinmefile
-          echo "PINME_APPKEY=$PINME_APPKEY" > ./.env
-          
-          # 4. 执行上传
           TARGET_DIR="${{ github.event.inputs.build_dir || './dist' }}"
           echo "正在上传 $TARGET_DIR 到 PinMe 域名: $DOMAIN"
+          
+          # 2. 【终极注入】既然确定了运行在 /home/runner 环境下，我们无死角伪造配置文件
+          # 构造标准的 PinMe 存储 JSON 格式
+          JSON_CONF="{\"appKey\":\"$PINME_APPKEY\",\"appkey\":\"$PINME_APPKEY\"}"
+          
+          # 精准塞入用户家目录、Vite+ 目录以及全局配置目录
+          mkdir -p /home/runner/.config/pinme
+          mkdir -p /home/runner/.vite-plus/bin
+          
+          echo "$JSON_CONF" > /home/runner/.config/pinme/config.json
+          echo "$JSON_CONF" > /home/runner/.pinmefile
+          echo "$JSON_CONF" > /home/runner/.pinme.json
+          echo "$JSON_CONF" > /home/runner/.pinmerc
+          echo "$JSON_CONF" > /home/runner/.vite-plus/config.json
+          echo "$JSON_CONF" > /home/runner/.vite-plus/bin/.pinmefile
+          
+          # 3. 顺便暴露系统变量做三重保险
+          export PINME_APPKEY="$PINME_APPKEY"
+          
+          # 4. 执行上传
           pinme upload "$TARGET_DIR" --domain "$DOMAIN"
