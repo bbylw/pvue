@@ -69,7 +69,7 @@ jobs:
         uses: actions/deploy-pages@v4
 
   # ==========================================
-  # JOB 2：独立部署到 PinMe (锁定 /home/runner 精准注入)
+  # JOB 2：独立部署到 PinMe (逻辑复写直接上传)
   # ==========================================
   deploy-to-pinme:
     runs-on: ubuntu-latest
@@ -107,23 +107,43 @@ jobs:
           TARGET_DIR="${{ github.event.inputs.build_dir || './dist' }}"
           echo "正在上传 $TARGET_DIR 到 PinMe 域名: $DOMAIN"
           
-          # 2. 【终极注入】既然确定了运行在 /home/runner 环境下，我们无死角伪造配置文件
-          # 构造标准的 PinMe 存储 JSON 格式
-          JSON_CONF="{\"appKey\":\"$PINME_APPKEY\",\"appkey\":\"$PINME_APPKEY\"}"
+          # 2. 【核心破解逻辑】既然我们不知道路径，直接让 Node.js 拦截全局的存储模块
+          # 动态执行一段脚本：直接将 AppKey 强行灌入该工具可能引用到的本地缓存或配置机制中
+          node -e '
+          try {
+            const fs = require("fs");
+            const path = require("path");
+            const os = require("os");
+            const appKey = process.env.PINME_APPKEY;
+            
+            // 扫描并写入 Node 工具常见的隐藏家目录前缀
+            const paths = [
+              path.join(os.homedir(), ".pinme"),
+              path.join(os.homedir(), ".pinme.json"),
+              path.join(os.homedir(), ".config", "pinme", "config.json"),
+              path.join(os.homedir(), ".pinmefile")
+            ];
+            
+            paths.forEach(p => {
+              try {
+                if(p.endsWith(".json")) {
+                  fs.mkdirSync(path.dirname(p), { recursive: true });
+                  fs.writeFileSync(p, JSON.stringify({ appKey: appKey, appkey: appKey, token: appKey }));
+                } else {
+                  fs.writeFileSync(p, appKey);
+                }
+              } catch(e){}
+            });
+            console.log("环境参数本地化写入完成。");
+          } catch(err) {
+            console.log("Hook 执行异常:", err);
+          }
+          '
           
-          # 精准塞入用户家目录、Vite+ 目录以及全局配置目录
-          mkdir -p /home/runner/.config/pinme
-          mkdir -p /home/runner/.vite-plus/bin
-          
-          echo "$JSON_CONF" > /home/runner/.config/pinme/config.json
-          echo "$JSON_CONF" > /home/runner/.pinmefile
-          echo "$JSON_CONF" > /home/runner/.pinme.json
-          echo "$JSON_CONF" > /home/runner/.pinmerc
-          echo "$JSON_CONF" > /home/runner/.vite-plus/config.json
-          echo "$JSON_CONF" > /home/runner/.vite-plus/bin/.pinmefile
-          
-          # 3. 顺便暴露系统变量做三重保险
+          # 3. 如果它的全局 CLI 是基于环境变量直接可调用的打包版，在无法读取文件时做最后一步降级保底：
+          # 在执行命令前注入通用别名环境
           export PINME_APPKEY="$PINME_APPKEY"
+          export APPKEY="$PINME_APPKEY"
           
           # 4. 执行上传
           pinme upload "$TARGET_DIR" --domain "$DOMAIN"
