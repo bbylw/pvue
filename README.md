@@ -136,14 +136,17 @@ vp build
 
 ### 2. 部署至 Vercel
 
-Vercel 提供了最优秀的零配置 Vue 3 部署体验。
+Vercel 提供了优秀的零配置 Vue 3 部署体验。
+
+> [!WARNING]
+> 由于 Vercel 构建容器默认没有全局安装 `vp` 命令行工具，**请勿将构建命令设为 `vp build`**。请务必使用 `npm run build` 或 `npx vp build` 来调用项目中安装的 Vite+ 工具链。
 
 #### 步骤：
 1. 注册并登录 [Vercel 官网](https://vercel.com/)。
 2. 点击 **Add New** -> **Project**，导入您的 GitHub 仓库 `bbylw/pvue`。
-3. 在 **Configure Project** 页面，保持默认配置即可：
-   - **Framework Preset**：Vercel 会自动识别并选择 `Vite`。
-   - **Build Command**：`npm run build` 或 `vp build`。
+3. 在 **Configure Project** 页面配置构建参数：
+   - **Framework Preset**：选择 `Vite`。
+   - **Build Command**：开启覆盖并设置为 `npm run build`（或 `npx vp build`）。
    - **Output Directory**：`dist`。
 4. 点击 **Deploy** 开始部署。
 5. **绑定自定义域名**：
@@ -156,11 +159,14 @@ Vercel 提供了最优秀的零配置 Vue 3 部署体验。
 
 Netlify 同样是一款高效的静态托管平台。
 
+> [!WARNING]
+> 与 Vercel 类似，Netlify 构建容器也无全局 `vp` 变量。**请确保将构建命令设为 `npm run build` 或 `npx vp build`**。
+
 #### 步骤：
 1. 登录 [Netlify 官网](https://www.netlify.com/)。
 2. 点击 **Add new site** -> **Import an existing project**，选择 GitHub 并导入 `bbylw/pvue` 仓库。
 3. 确认以下构建参数：
-   - **Build command**：`npm run build` 或 `vp build`。
+   - **Build command**：`npm run build`（或 `npx vp build`）。
    - **Publish directory**：`dist`。
 4. 点击 **Deploy site** 启动构建。
 5. **绑定自定义域名**：
@@ -173,11 +179,14 @@ Netlify 同样是一款高效的静态托管平台。
 
 依托 Cloudflare 全球 CDN 的极速静态资源加载平台。
 
+> [!WARNING]
+> 请务必检查 Cloudflare Pages 中的构建命令配置，**确保其为 `npm run build` 或 `npx vp build`**，不要使用默认的 `vite build`，以保证正确启用 Vite+ 的打包流程。
+
 #### 步骤：
 1. 登录 [Cloudflare 控制台](https://dash.cloudflare.com/)，在左侧菜单栏选择 **Workers 和 Pages** -> **Pages**。
 2. 点击 **连接到 git** 并选择导入仓库 `bbylw/pvue`。
-3. 选择 **框架预设** 为 **`Vite`**，其他默认：
-   - **构建命令**：`npm run build`
+3. 选择 **框架预设** 为 **`Vite`**，并覆盖以下配置：
+   - **构建命令**：`npm run build`（或 `npx vp build`）
    - **输出目录**：`dist`
 4. 点击 **保存并部署**。
 5. **绑定自定义域名**：
