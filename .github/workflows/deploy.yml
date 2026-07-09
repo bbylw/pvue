@@ -1,10 +1,28 @@
-name: Deploy to GitHub Pages
+name: Multi-Deploy (GitHub Pages & PinMe)
 
 on:
   push:
     branches:
       - main
+    # [高级配置] 路径过滤：只有当相关核心文件修改时才触发自动部署，避免修改 README 等文件频繁触发构建
+    paths:
+      - 'src/**'
+      - 'public/**'
+      - 'package.json'
+      - 'vite.config.*'
+  
+  # [高级配置] 支持手动触发，并允许在 UI 界面输入自定义域名或临时构建目录
   workflow_dispatch:
+    inputs:
+      domain:
+        description: 'PinMe 自定义域名 (可选，留空则自动根据仓库名生成)'
+        required: false
+        type: string
+      build_dir:
+        description: '打包产物目录'
+        required: false
+        default: './dist'
+        type: string
 
 permissions:
   contents: read
@@ -21,13 +39,15 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
+    
     steps:
-      - name: Checkout
+      - name: Checkout code
         uses: actions/checkout@v4
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
+      # [构建缓存] 利用 voidzero 內建的 cache 功能加速依赖安装
       - name: Set up Node.js & Vite+
         uses: voidzero-dev/setup-vp@v1
         with:
@@ -41,11 +61,61 @@ jobs:
       - name: Build
         run: vp build
 
+      # ==========================================
+      # 渠道 1：部署到 GitHub Pages
+      # ==========================================
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: './dist'
+          path: ${{ github.event.inputs.build_dir || './dist' }}
 
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
+      # ==========================================
+      # 渠道 2：部署到 PinMe (去中心化 IPFS)
+      # ==========================================
+      - name: Install PinMe CLI
+        run: npm install -g pinme
+
+      - name: Deploy to PinMe
+        env:
+          PINME_APPKEY: ${{ secrets.PINME_APPKEY }}
+        run: |
+          # 1. 验证身份
+          pinme set-appkey "$PINME_APPKEY"          
+          
+          # 2. 回滚与监控策略：在部署前打印近一次的部署记录
+          echo "=== 部署前的最近历史记录 ==="
+          pinme list -l 1 || true
+          
+          # 3. 域名解析逻辑（优先使用手动输入的域名，否则自动生成 bbylw-pvue）
+          if [ -n "${{ github.event.inputs.domain }}" ]; then
+            DOMAIN="${{ github.event.inputs.domain }}"
+          else
+            DOMAIN=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]' | tr '/' '-')
+          fi
+          
+          # 4. 获取实际的打包产物路径
+          TARGET_DIR="${{ github.event.inputs.build_dir || './dist' }}"
+          
+          echo "正在部署目录 $TARGET_DIR 到域名: $DOMAIN"
+          pinme upload "$TARGET_DIR" --domain "$DOMAIN"
+
+      # ==========================================
+      # [高级可选] 渠道 3：Cloudflare CDN 缓存刷新
+      # ==========================================
+      # 如果你后续为 PinMe 分配了自定义域名，并且套了 Cloudflare CDN，
+      # 可以取消下方注释，并在 GitHub Secrets 中配置 CF_ZONE_ID 和 CF_TOKEN
+      # - name: Purge Cloudflare Cache
+      #   env:
+      #     CF_ZONE_ID: ${{ secrets.CF_ZONE_ID }}
+      #     CF_TOKEN: ${{ secrets.CF_TOKEN }}
+      #   run: |
+      #     if [ -n "$CF_TOKEN" ]; then
+      #       curl -X POST "https://api.cloudflare.com/client/v4/zones/$CF_ZONE_ID/purge_cache" \
+      #         -H "Authorization: Bearer $CF_TOKEN" \
+      #         -H "Content-Type: application/json" \
+      #         --data '{"purge_everything":true}'
+      #     fi
