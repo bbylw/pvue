@@ -4,14 +4,14 @@ on:
   push:
     branches:
       - main
-    # [高级配置] 路径过滤：只有当相关核心文件修改时才触发自动部署，避免修改 README 等文件频繁触发构建
+    # 路径过滤：仅在核心源码或配置变更时触发，避免修改 README 时频繁构建
     paths:
       - 'src/**'
       - 'public/**'
       - 'package.json'
       - 'vite.config.*'
   
-  # [高级配置] 支持手动触发，并允许在 UI 界面输入自定义域名或临时构建目录
+  # 支持在 GitHub Actions 界面上手动触发
   workflow_dispatch:
     inputs:
       domain:
@@ -44,10 +44,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      # 升级到 v5 以原生支持更高版本的 Node 环境，消除警告
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
-      # [构建缓存] 利用 voidzero 內建的 cache 功能加速依赖安装
+      # 配置 Node.js v22 环境并利用 voidzero 的内建缓存
       - name: Set up Node.js & Vite+
         uses: voidzero-dev/setup-vp@v1
         with:
@@ -64,11 +65,13 @@ jobs:
       # ==========================================
       # 渠道 1：部署到 GitHub Pages
       # ==========================================
+      # 升级至 v4，完美适配最新的 GitHub Actions Runner 环境
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v4
         with:
           path: ${{ github.event.inputs.build_dir || './dist' }}
 
+      # 部署至 GitHub Pages
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
@@ -83,39 +86,22 @@ jobs:
         env:
           PINME_APPKEY: ${{ secrets.PINME_APPKEY }}
         run: |
-          # 1. 验证身份
+          # 1. 验证 PinMe 身份
           pinme set-appkey "$PINME_APPKEY"          
           
-          # 2. 回滚与监控策略：在部署前打印近一次的部署记录
+          # 2. 打印最近一次部署历史（辅助排错）
           echo "=== 部署前的最近历史记录 ==="
           pinme list -l 1 || true
           
-          # 3. 域名解析逻辑（优先使用手动输入的域名，否则自动生成 bbylw-pvue）
+          # 3. 域名解析逻辑（手动输入优先，否则自动生成如 bbylw-pvue）
           if [ -n "${{ github.event.inputs.domain }}" ]; then
             DOMAIN="${{ github.event.inputs.domain }}"
           else
             DOMAIN=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]' | tr '/' '-')
           fi
           
-          # 4. 获取实际的打包产物路径
+          # 4. 获取实际打包路径并执行上传
           TARGET_DIR="${{ github.event.inputs.build_dir || './dist' }}"
+          echo "正在部署目录 $TARGET_DIR 到 PinMe 域名: $DOMAIN"
           
-          echo "正在部署目录 $TARGET_DIR 到域名: $DOMAIN"
           pinme upload "$TARGET_DIR" --domain "$DOMAIN"
-
-      # ==========================================
-      # [高级可选] 渠道 3：Cloudflare CDN 缓存刷新
-      # ==========================================
-      # 如果你后续为 PinMe 分配了自定义域名，并且套了 Cloudflare CDN，
-      # 可以取消下方注释，并在 GitHub Secrets 中配置 CF_ZONE_ID 和 CF_TOKEN
-      # - name: Purge Cloudflare Cache
-      #   env:
-      #     CF_ZONE_ID: ${{ secrets.CF_ZONE_ID }}
-      #     CF_TOKEN: ${{ secrets.CF_TOKEN }}
-      #   run: |
-      #     if [ -n "$CF_TOKEN" ]; then
-      #       curl -X POST "https://api.cloudflare.com/client/v4/zones/$CF_ZONE_ID/purge_cache" \
-      #         -H "Authorization: Bearer $CF_TOKEN" \
-      #         -H "Content-Type: application/json" \
-      #         --data '{"purge_everything":true}'
-      #     fi
