@@ -1,149 +1,52 @@
-name: Multi-Deploy (GitHub Pages & PinMe)
+name: Deploy to GitHub Pages
 
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - 'src/**'
-      - 'public/**'
-      - 'package.json'
-      - 'vite.config.*'
-  
-  workflow_dispatch:
-    inputs:
-      domain:
-        description: 'PinMe 自定义域名 (可选)'
-        required: false
-        type: string
-      build_dir:
-        description: '打包产物目录'
-        required: false
-        default: './dist'
-        type: string
+  push:
+    branches:
+      - main
+  workflow_dispatch:
 
 permissions:
-  contents: read
-  pages: write
-  id-token: write
+  contents: read
+  pages: write
+  id-token: write
 
 concurrency:
-  group: "pages"
-  cancel-in-progress: false
+  group: "pages"
+  cancel-in-progress: false
 
 jobs:
-  # ==========================================
-  # JOB 1：独立部署到 GitHub Pages (保持成功)
-  # ==========================================
-  deploy-github-pages:
-    environment:
-      name: github-pages
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - name: Setup Pages
-        uses: actions/configure-pages@v5
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
 
-      - name: Set up Node.js & Vite+
-        uses: voidzero-dev/setup-vp@v1
-        with:
-          node-version: '22'
-          cache: true
-          run-install: false
+      - name: Set up Node.js & Vite+
+        uses: voidzero-dev/setup-vp@v1
+        with:
+          node-version: '22'
+          cache: true
+          run-install: false
 
-      - name: Install dependencies
-        run: vp install
+      - name: Install dependencies
+        run: vp install
 
-      - name: Build
-        run: vp build
+      - name: Build
+        run: vp build
 
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v4
-        with:
-          path: ${{ github.event.inputs.build_dir || './dist' }}
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: './dist'
 
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
-
-  # ==========================================
-  # JOB 2：独立部署到 PinMe (逻辑复写直接上传)
-  # ==========================================
-  deploy-to-pinme:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Set up Node.js & Vite+
-        uses: voidzero-dev/setup-vp@v1
-        with:
-          node-version: '22'
-          cache: true
-          run-install: false
-
-      - name: Install dependencies
-        run: vp install
-
-      - name: Build
-        run: vp build
-
-      - name: Install PinMe CLI
-        run: npm install -g pinme
-
-      - name: Deploy to PinMe
-        env:
-          PINME_APPKEY: ${{ secrets.PINME_APPKEY }}
-        run: |
-          # 1. 自动解析绑定的子域名
-          if [ -n "${{ github.event.inputs.domain }}" ]; then
-            DOMAIN="${{ github.event.inputs.domain }}"
-          else
-            DOMAIN=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]' | tr '/' '-')
-          fi
-          
-          TARGET_DIR="${{ github.event.inputs.build_dir || './dist' }}"
-          echo "正在上传 $TARGET_DIR 到 PinMe 域名: $DOMAIN"
-          
-          # 2. 【核心破解逻辑】既然我们不知道路径，直接让 Node.js 拦截全局的存储模块
-          # 动态执行一段脚本：直接将 AppKey 强行灌入该工具可能引用到的本地缓存或配置机制中
-          node -e '
-          try {
-            const fs = require("fs");
-            const path = require("path");
-            const os = require("os");
-            const appKey = process.env.PINME_APPKEY;
-            
-            // 扫描并写入 Node 工具常见的隐藏家目录前缀
-            const paths = [
-              path.join(os.homedir(), ".pinme"),
-              path.join(os.homedir(), ".pinme.json"),
-              path.join(os.homedir(), ".config", "pinme", "config.json"),
-              path.join(os.homedir(), ".pinmefile")
-            ];
-            
-            paths.forEach(p => {
-              try {
-                if(p.endsWith(".json")) {
-                  fs.mkdirSync(path.dirname(p), { recursive: true });
-                  fs.writeFileSync(p, JSON.stringify({ appKey: appKey, appkey: appKey, token: appKey }));
-                } else {
-                  fs.writeFileSync(p, appKey);
-                }
-              } catch(e){}
-            });
-            console.log("环境参数本地化写入完成。");
-          } catch(err) {
-            console.log("Hook 执行异常:", err);
-          }
-          '
-          
-          # 3. 如果它的全局 CLI 是基于环境变量直接可调用的打包版，在无法读取文件时做最后一步降级保底：
-          # 在执行命令前注入通用别名环境
-          export PINME_APPKEY="$PINME_APPKEY"
-          export APPKEY="$PINME_APPKEY"
-          
-          # 4. 执行上传
-          pinme upload "$TARGET_DIR" --domain "$DOMAIN"
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+怎么办？
