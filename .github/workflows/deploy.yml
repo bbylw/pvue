@@ -4,18 +4,16 @@ on:
   push:
     branches:
       - main
-    # 路径过滤：仅在核心源码或配置变更时触发，避免修改 README 时频繁构建
     paths:
       - 'src/**'
       - 'public/**'
       - 'package.json'
       - 'vite.config.*'
   
-  # 支持在 GitHub Actions 界面上手动触发
   workflow_dispatch:
     inputs:
       domain:
-        description: 'PinMe 自定义域名 (可选，留空则自动根据仓库名生成)'
+        description: 'PinMe 自定义域名 (可选)'
         required: false
         type: string
       build_dir:
@@ -34,21 +32,20 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  deploy:
+  # ==========================================
+  # JOB 1：独立部署到 GitHub Pages
+  # ==========================================
+  deploy-github-pages:
     environment:
       name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
-    
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # 升级到 v5 以原生支持更高版本的 Node 环境，消除警告
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
-      # 配置 Node.js v22 环境并利用 voidzero 的内建缓存
       - name: Set up Node.js & Vite+
         uses: voidzero-dev/setup-vp@v1
         with:
@@ -62,23 +59,37 @@ jobs:
       - name: Build
         run: vp build
 
-      # ==========================================
-      # 渠道 1：部署到 GitHub Pages
-      # ==========================================
-      # 升级至 v4，完美适配最新的 GitHub Actions Runner 环境
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v4
         with:
           path: ${{ github.event.inputs.build_dir || './dist' }}
 
-      # 部署至 GitHub Pages
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
 
-      # ==========================================
-      # 渠道 2：部署到 PinMe (去中心化 IPFS)
-      # ==========================================
+  # ==========================================
+  # JOB 2：独立部署到 PinMe (IPFS 去中心化存储)
+  # ==========================================
+  deploy-to-pinme:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js & Vite+
+        uses: voidzero-dev/setup-vp@v1
+        with:
+          node-version: '22'
+          cache: true
+          run-install: false
+
+      - name: Install dependencies
+        run: vp install
+
+      - name: Build
+        run: vp build
+
       - name: Install PinMe CLI
         run: npm install -g pinme
 
@@ -86,22 +97,18 @@ jobs:
         env:
           PINME_APPKEY: ${{ secrets.PINME_APPKEY }}
         run: |
-          # 1. 验证 PinMe 身份
           pinme set-appkey "$PINME_APPKEY"          
           
-          # 2. 打印最近一次部署历史（辅助排错）
-          echo "=== 部署前的最近历史记录 ==="
+          echo "=== 检查 PinMe 部署状态 ==="
           pinme list -l 1 || true
           
-          # 3. 域名解析逻辑（手动输入优先，否则自动生成如 bbylw-pvue）
           if [ -n "${{ github.event.inputs.domain }}" ]; then
             DOMAIN="${{ github.event.inputs.domain }}"
           else
             DOMAIN=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]' | tr '/' '-')
           fi
           
-          # 4. 获取实际打包路径并执行上传
           TARGET_DIR="${{ github.event.inputs.build_dir || './dist' }}"
-          echo "正在部署目录 $TARGET_DIR 到 PinMe 域名: $DOMAIN"
+          echo "正在上传 $TARGET_DIR 到 PinMe 域名: $DOMAIN"
           
           pinme upload "$TARGET_DIR" --domain "$DOMAIN"
