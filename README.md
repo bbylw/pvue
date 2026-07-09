@@ -1,6 +1,6 @@
 # WebNav Hub
 
-WebNav Hub 是一个响应式、高性能的个人及团队常用网站导航中心。本项目已使用 **Vue 3 (v3.5+)** 及 VoidZero 推出的下一代前端统一开发工具链 **Vite+** (`vite-plus`) 进行全面重构。
+WebNav Hub 是一个响应式、高性能的个人及团队常用网站导航中心。本项目已使用 **Vue 3 (v3.5+)** 及 VoidZero 推出的下一代前端统一开发工具链 **[Vite+](https://github.com/voidzero-dev/vite-plus)** (`vite-plus`) 进行全面重构。
 
 ---
 
@@ -198,7 +198,7 @@ Netlify 同样是一款高效的静态托管平台。
 ## 🔧 技术选型生态
 
 - **核心视图框架**：Vue 3.5.x
-- **前端工具链**：Vite+ (vite-plus@0.2.4)
+- **前端工具链**：[Vite+](https://github.com/voidzero-dev/vite-plus) (`vite-plus@0.2.4`)
 - **底层编译器生态**：
   - **Rolldown**：基于 Rust 的极速打包器（打包产物位于 `dist/`）
   - **Oxlint & Oxfmt**：基于 Rust 的超快 Linter & Formatter
