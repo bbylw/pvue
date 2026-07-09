@@ -107,18 +107,9 @@ jobs:
           TARGET_DIR="${{ github.event.inputs.build_dir || './dist' }}"
           echo "正在上传 $TARGET_DIR 到 PinMe 域名: $DOMAIN"
           
-          # 2. 【无交互降维打击】直接通过系统环境变量或多路径写入配置文件，物理绕过 CLI 交互
-          # 方案 A：由于它可能读取全局 ENV（尽管之前可能没读全，我们这里做保底）
-          export PINME_APPKEY="$PINME_APPKEY"
-          export APP_KEY="$PINME_APPKEY"
+          # 2. 【核心修复】利用 script 命令伪造真实 TTY 终端
+          # 这样可以强行强迫 PinMe 认为身处交互环境，从而接受 echo 传入的 AppKey
+          script -q -c "echo '$PINME_APPKEY' | pinme set-appkey" /dev/null
           
-          # 方案 B：直接物理生成它所有可能读取的配置文件
-          mkdir -p ~/.config/pinme
-          echo "{\"appKey\":\"$PINME_APPKEY\",\"appkey\":\"$PINME_APPKEY\"}" > ~/.config/pinme/config.json
-          echo "{\"appKey\":\"$PINME_APPKEY\",\"appkey\":\"$PINME_APPKEY\"}" > ~/.config/pinme.json
-          echo "{\"appKey\":\"$PINME_APPKEY\",\"appkey\":\"$PINME_APPKEY\"}" > ~/.pinmefile
-          echo "{\"appKey\":\"$PINME_APPKEY\",\"appkey\":\"$PINME_APPKEY\"}" > ~/.pinmerc
-          echo "appKey=$PINME_APPKEY" > ~/.env
-          
-          # 3. 验证并执行部署（完全移除了带有交互提问的 set-appkey 命令）
+          # 3. 验证并执行部署
           pinme upload "$TARGET_DIR" --domain "$DOMAIN"
