@@ -97,7 +97,7 @@ jobs:
         env:
           PINME_APPKEY: ${{ secrets.PINME_APPKEY }}
         run: |
-          # 1. 解析绑定的子域名
+          # 1. 自动解析绑定的子域名
           if [ -n "${{ github.event.inputs.domain }}" ]; then
             DOMAIN="${{ github.event.inputs.domain }}"
           else
@@ -107,5 +107,9 @@ jobs:
           TARGET_DIR="${{ github.event.inputs.build_dir || './dist' }}"
           echo "正在上传 $TARGET_DIR 到 PinMe 域名: $DOMAIN"
           
-          # 2. 【核心修复】直接在 upload 命令中带上 --appkey，跳过之前的登录提问
-          pinme upload "$TARGET_DIR" --domain "$DOMAIN" --appkey "$PINME_APPKEY"
+          # 2. 【核心修复】使用 printf 模拟键盘输入密匙并敲击回车
+          # 强行破解 CLI 工具在非真实终端下的交互拦截
+          printf "%s\n" "$PINME_APPKEY" | pinme set-appkey
+          
+          # 3. 验证并执行部署
+          pinme upload "$TARGET_DIR" --domain "$DOMAIN"
