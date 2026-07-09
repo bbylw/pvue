@@ -75,10 +75,10 @@ vp build
 
 ## ✍️ 如何管理链接与分类 (增减指南)
 
-在重构后的项目中，所有的导航数据已经与 UI 视图彻底解耦，统一存放在 [links.js](file:///c:/Users/bbylw/Desktop/net/src/data/links.js) 数据模块中。您无需再像以前那样修改繁杂的 HTML 标签，只需编辑该数据文件即可完成内容管理。
+在重构后的项目中，所有的导航数据已经与 UI 视图彻底解耦，统一存放在 [links.js](./src/data/links.js) 数据模块中。您无需再像以前那样修改繁杂的 HTML 标签，只需编辑该数据文件即可完成内容管理。
 
 ### 1. 增加/修改/删除 链接 (Link)
-打开 [links.js](file:///c:/Users/bbylw/Desktop/net/src/data/links.js)，定位到对应分类下的 `links` 数组：
+打开 [links.js](./src/data/links.js)，定位到对应分类下的 `links` 数组：
 * **新增链接**：在数组中追加一个新对象，例如：
   ```javascript
   {
@@ -124,7 +124,7 @@ vp build
 - **记录类型**：`CNAME`
 - **主机记录**：`pvue`
 - **记录值**：`bbylw.github.io` (替换为您的 GitHub Pages 默认域名)
-- 已经在 [public/CNAME](file:///c:/Users/bbylw/Desktop/net/public/CNAME) 中内置了您的自定义域名声明。
+- 已经在 [public/CNAME](./public/CNAME) 中内置了您的自定义域名声明。
 
 #### 步骤 B：启用 GitHub 托管
 1. 将本项目推送至您的 GitHub 仓库（例如 `https://github.com/bbylw/pvue`）。
