@@ -209,10 +209,10 @@ Netlify 同样是一款高效的静态托管平台。
 
 ## 🔧 技术选型生态
 
-- **核心视图框架**：Vue 3.5.x
-- **前端工具链**：[Vite+](https://github.com/voidzero-dev/vite-plus) (`vite-plus@0.2.4`)
+- **核心视图框架**：Vue 3.5.44
+- **前端工具链**：[Vite+](https://github.com/voidzero-dev/vite-plus) (`vite-plus@1.1.0`)
 - **底层编译器生态**：
-  - **Rolldown**：基于 Rust 的极速打包器（打包产物位于 `dist/`）
+  - **Rolldown**：基于 Rust 的极速打包器（打包产物位于 `dist/`，耗时 ~145ms）
   - **Oxlint & Oxfmt**：基于 Rust 的超快 Linter & Formatter
 - **样式方案**：原生 CSS 响应式布局
-- **图标集**：FontAwesome Free (v7.3.0)
+- **图标集**：FontAwesome Free (v7.3.1)
