@@ -80,7 +80,7 @@ export const categories = [
       },
       {
         "name": "labs.google",
-        "url": "https://labs.google/fx/zh",
+        "url": "https://labs.google/",
         "icon": "fa-brands fa-google-plus"
       },
       {
@@ -104,8 +104,8 @@ export const categories = [
         "icon": "fa-solid fa-microchip"
       },
       {
-        "name": "modal",
-        "url": "https://modal.com/",
+        "name": "腾讯元宝",
+        "url": "https://yuanbao.tencent.com/",
         "icon": "fa-solid fa-robot"
       },
       {
@@ -154,8 +154,8 @@ export const categories = [
         "icon": "fa-solid fa-robot"
       },
       {
-        "name": "kimchi",
-        "url": "https://kimchi.dev/",
+        "name": "is-agentic",
+        "url": "https://is-agentic.com/",
         "icon": "fa-solid fa-robot"
       },
       {
@@ -164,8 +164,8 @@ export const categories = [
         "icon": "fa-brands fa-codepen"
       },
       {
-        "name": "x.ai",
-        "url": "https://x.ai/",
+        "name": "grok",
+        "url": "https://grok.com/",
         "icon": "fa-brands fa-x-twitter"
       },
       {
@@ -174,8 +174,8 @@ export const categories = [
         "icon": "fa-solid fa-heart-pulse"
       },
       {
-        "name": "agnes-ai",
-        "url": "https://agnes-ai.com/",
+        "name": "letta-code",
+        "url": "https://docs.letta.com/",
         "icon": "fa-solid fa-code"
       },
       {
@@ -209,13 +209,13 @@ export const categories = [
         "icon": "fa-solid fa-code-branch"
       },
       {
-        "name": "kiro.dev",
-        "url": "https://kiro.dev/",
-        "icon": "fa-solid fa-code"
+        "name": "Google Flow",
+        "url": "https://flow.google.com/",
+        "icon": "fa-brands fa-google-plus"
       },
       {
-        "name": "iflow",
-        "url": "https://vibex.iflow.cn/",
+        "name": "404s.design",
+        "url": "https://www.404s.design/",
         "icon": "fa-solid fa-code"
       },
       {
@@ -267,12 +267,12 @@ export const categories = [
   },
   {
     "id": "social",
-    "title": "托管社交",
+    "title": "社交媒体",
     "links": [
       {
-        "name": "wasmer边缘计算",
-        "url": "https://wasmer.io/",
-        "icon": "fa-regular fa-cloud"
+        "name": "Facebook",
+        "url": "https://www.facebook.com",
+        "icon": "fa-brands fa-facebook"
       },
       {
         "name": "Twitter",
@@ -300,9 +300,9 @@ export const categories = [
         "icon": "fa-solid fa-d"
       },
       {
-        "name": "surge",
-        "url": "https://surge.sh/",
-        "icon": "fa-brands fa-css"
+        "name": "railway",
+        "url": "https://railway.com/",
+        "icon": "fa-solid fa-archway"
       },
       {
         "name": "vercel",
@@ -371,8 +371,13 @@ export const categories = [
       },
       {
         "name": "电影导航",
-        "url": "https://mv.186404.xyz/",
+        "url": "https://movn.ndjp.net/",
         "icon": "fa-solid fa-tv"
+      },
+      {
+        "name": "追剧导航",
+        "url": "https://zhuiju.ndjp.net/",
+        "icon": "fa-solid fa-film"
       }
     ]
   },
@@ -386,8 +391,8 @@ export const categories = [
         "icon": "fa-solid fa-location-dot"
       },
       {
-        "name": "privatebin在线粘贴板",
-        "url": "https://privatebin.net/",
+        "name": "短链",
+        "url": "https://d.186404.xyz/",
         "icon": "fa-solid fa-link"
       },
       {
@@ -421,14 +426,14 @@ export const categories = [
         "icon": "fa-solid fa-book"
       },
       {
-        "name": "SenseNova Studio信息图",
-        "url": "https://unify.light-ai.top/",
+        "name": "临时邮箱",
+        "url": "https://email.ml/",
         "icon": "fa-solid fa-envelope"
       },
       {
-        "name": "vercel-drop",
-        "url": "https://vercel.com/drop",
-        "icon": "fa-solid fa-droplet"
+        "name": "A姐",
+        "url": "https://www.ahhhhfs.com/",
+        "icon": "fa-solid fa-blog"
       },
       {
         "name": "IP查询",
@@ -526,9 +531,9 @@ export const categories = [
         "icon": "fa-solid fa-envelopes-bulk"
       },
       {
-        "name": "objectremover去水印",
-        "url": "https://www.objectremover.com/",
-        "icon": "fa-solid fa-object-group"
+        "name": "github文件加速",
+        "url": "https://gb.w404.nyc.mn/",
+        "icon": "fa-brands fa-github"
       },
       {
         "name": "hostryDNS域名托管",
@@ -576,8 +581,8 @@ export const categories = [
         "icon": "fa-solid fa-file-pdf"
       },
       {
-        "name": "supabase免费数据库",
-        "url": "https://supabase.com/",
+        "name": "free-proxy",
+        "url": "http://free-proxy.cz/en/",
         "icon": "fa-brands fa-internet-explorer"
       },
       {
@@ -601,8 +606,8 @@ export const categories = [
         "icon": "fa-solid fa-server"
       },
       {
-        "name": "colocrossing云服务vps",
-        "url": "https://www.colocrossing.com/",
+        "name": "hostuno",
+        "url": "https://www.hostuno.com/",
         "icon": "fa-solid fa-server"
       },
       {
@@ -746,8 +751,8 @@ export const categories = [
         "icon": "fa-solid fa-copy"
       },
       {
-        "name": "KataBump免费域名",
-        "url": "https://katabump.com/",
+        "name": "claw容器",
+        "url": "https://claw.cloud/",
         "icon": "fa-solid fa-cloud"
       },
       {
