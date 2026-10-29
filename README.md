@@ -1,13 +1,14 @@
 # WebNav Hub
 
-WebNav Hub 是一个响应式、高性能的个人及团队常用网站导航中心。本项目已使用 **Vue 3 (v3.5+)** 及 VoidZero 推出的下一代前端统一开发工具链 **[Vite+](https://github.com/voidzero-dev/vite-plus)** (`vite-plus`) 进行全面重构。
+WebNav Hub 是一个响应式、高性能的个人及团队常用网站导航中心。本项目已全面迁移至 **[Bun](https://bun.sh)** 最新发行版作为运行时与包管理器，并搭配 **Vue 3 (v3.5+)** 与 **[Vite 8](https://vite.dev)** 进行构建。
 
 ---
 
 ## ⚡ 特性亮点
 
+- **Bun 极速生态**：全面采用 Bun 作为 JavaScript 运行时与依赖管理器，提供毫秒级安装体验与卓越的原生执行性能。
 - **Vue 3 & 响应式渲染**：使用 Vue 3 最新稳定版（Composition API 与 `<script setup>`）重构，数据与视图彻底解耦，组件更加轻量。
-- **Vite+ 极速构建**：底层采用 Rust 编写的下一代打包器 **Rolldown** 替代传统 Rollup，生产环境构建耗时缩短至 **`240ms`** 左右，冷启动与热重载（HMR）快如闪电。
+- **Vite 8 极速构建**：底层采用 Rust 编写的下一代打包器 **Rolldown** 替代传统 Rollup，生产环境构建耗时缩短至 **`500ms`** 以内，冷启动与热重载（HMR）快如闪电。
 - **实时快捷搜索**：
   - 支持对**网站名称**或**网址 URL** 进行不区分大小写的实时模糊搜索。
   - **动态分类折叠**：若某一分类下无符合关键字的链接，该分类标题及网格会自动隐藏，保持导航界面清爽。
@@ -26,7 +27,7 @@ WebNav Hub 是一个响应式、高性能的个人及团队常用网站导航中
 net/
 ├── .github/
 │   └── workflows/
-│       └── deploy.yml    # 原生 GitHub Actions CI/CD 自动部署工作流
+│       └── deploy.yml    # 原生 GitHub Actions CI/CD (基于 Bun)
 ├── public/
 │   ├── CNAME             # GitHub Pages 自定义域名配置
 │   └── favicon.svg       # 重新设计的黑橙渐变 SVG favicon
@@ -36,11 +37,13 @@ net/
 │   ├── App.vue           # 导航站主 App 组件 (搜索、渲染及滚动监听)
 │   ├── main.js           # Vue 应用初始化入口
 │   └── style.css         # 页面全局及组件响应式样式 (Vanilla CSS)
+├── .bun-version          # Bun 版本锁定配置
 ├── .gitignore            # Git 忽略配置
-├── .npmrc                # 依赖镜像源与 CI 拉取策略
-├── index.html            # Vite+ 挂载模板页
-├── package.json          # 依赖配置与 Vite+ 重写指令
-├── vite.config.js        # Vite+ 配置文件
+├── .npmrc                # 依赖镜像源配置
+├── bun.lock              # Bun 依赖锁文件
+├── index.html            # 页面挂载模板
+├── package.json          # 依赖配置与运行指令
+├── vite.config.js        # Vite 配置文件
 └── README.md             # 本说明文档
 ```
 
@@ -48,46 +51,42 @@ net/
 
 ## 🛠️ 本地开发与指令
 
+本项目推荐使用 [Bun](https://bun.sh)（最新发行版）进行开发与构建：
+
 ### 1. 安装依赖
-由于本项目集成了 Vite+ 的依赖重定向与版本锁定，推荐通过以下两种方式之一安装依赖：
-
-* **方式 A：通过全局 `vp` 工具（推荐）**
-  如果您已在本地全局安装了 `vp` 命令行工具，请直接在项目根目录下运行：
-  ```bash
-  vp install
-  ```
-  *(Vite+ 会自动识别 package-lock.json 并安全、一致地锁版本安装依赖)*
-
-* **方式 B：使用标准 `npm` 首次安装**
-  如果您的系统尚未全局安装 `vp`，可以直接使用本地 `npm` 进行依赖初始化安装：
-  ```bash
-  npm install
-  ```
-  *(首次安装完成后，项目本地已包含 `vite-plus`，后续您便可以使用 `npx vp <指令>` 进行本地开发与编译)*
+在项目根目录下运行：
+```bash
+bun install
+```
 
 ### 2. 启动开发服务器
-启动本地开发服务并启用 Vite+ 极速热重载：
+启动本地开发服务并启用极速热重载：
 ```bash
-npm run dev
-# 或使用 npx 调用本地依赖中的 vp 命令
-npx vp dev
+bun run dev
 ```
-*注：若想直接使用全局 `vp` 指令，可先全局安装：`npm install -g vite-plus`。*
-启动后在浏览器中访问 `http://localhost:3000/` 即可。
+推荐配合 `portless` 启动本地调试：
+```bash
+portless pvue bun run dev
+# 访问 https://pvue.localhost
+```
 
 ### 3. 生产环境编译
 编译并生成打包产物，输出至 `dist/` 目录：
 ```bash
-npm run build
-# 或使用 npx 调用本地依赖中的 vp 命令
-npx vp build
+bun run build
+```
+
+### 4. 预览打包产物
+本地预览编译后的生产产物：
+```bash
+bun run preview
 ```
 
 ---
 
 ## ✍️ 如何管理链接与分类 (增减指南)
 
-在重构后的项目中，所有的导航数据已经与 UI 视图彻底解耦，统一存放在 [links.js](./src/data/links.js) 数据模块中。您无需再像以前那样修改繁杂的 HTML 标签，只需编辑该数据文件即可完成内容管理。
+在重构后的项目中，所有的导航数据已经与 UI 视图彻底解耦，统一存放在 [links.js](./src/data/links.js) 数据模块中。您无需修改 HTML 标签，只需编辑该数据文件即可完成内容管理。
 
 ### 1. 增加/修改/删除 链接 (Link)
 打开 [links.js](./src/data/links.js)，定位到对应分类下的 `links` 数组：
@@ -116,19 +115,19 @@ npx vp build
 * **删除分类**：从数组中彻底删除该分类对象。
 
 > [!TIP]
-> 修改并保存数据后，处于运行状态的本地开发服务 (`npm run dev`) 会自动进行热更新（HMR），您直接在浏览器中即可看到增减后的内容，非常高效。
+> 修改并保存数据后，处于运行状态的本地开发服务 (`bun run dev`) 会自动进行热更新（HMR），您直接在浏览器中即可看到增减后的内容，非常高效。
 
 ---
 
 ## 🚀 部署至各大托管平台教程
 
-由于重构后的项目为纯静态单页应用（SPA），因此可以极为方便地部署至所有主流的静态网站托管平台。以下是各平台的详细部署步骤。
+由于本项目为纯静态单页应用（SPA），因此可以极为方便地部署至所有主流的静态网站托管平台。
 
 ---
 
 ### 1. 部署至 GitHub Pages (推荐 - 自动流水线)
 
-我们已经在项目中内置了**原生 GitHub Actions** 自动化构建与发布流程。
+我们已经在项目中内置了**原生 GitHub Actions** 自动化构建与发布流程（使用 `oven-sh/setup-bun`）。
 
 #### 步骤 A：配置自定义域名 DNS
 如果您使用自定义域名（例如 `pvue.ndjp.net`）：
@@ -142,23 +141,21 @@ npx vp build
 1. 将本项目推送至您的 GitHub 仓库（例如 `https://github.com/bbylw/pvue`）。
 2. 进入仓库的 **Settings** -> 左侧导航 **Pages**。
 3. 在 **Build and deployment** -> **Source** 下拉菜单中，选择 **`GitHub Actions`**。
-4. 随后，每次推送到 `main` 分支时，项目便会自动进行极速打包并上线部署。
+4. 随后，每次推送到 `main` 分支时，项目便会自动通过 Bun 进行极速打包并上线部署。
 
 ---
 
 ### 2. 部署至 Vercel
 
-Vercel 提供了优秀的零配置 Vue 3 部署体验。
-
-> [!WARNING]
-> 由于 Vercel 构建容器默认没有全局安装 `vp` 命令行工具，**请勿将构建命令设为 `vp build`**。请务必使用 `npm run build` 或 `npx vp build` 来调用项目中安装的 Vite+ 工具链。
+Vercel 原生支持 Bun 环境。
 
 #### 步骤：
 1. 注册并登录 [Vercel 官网](https://vercel.com/)。
 2. 点击 **Add New** -> **Project**，导入您的 GitHub 仓库 `bbylw/pvue`。
 3. 在 **Configure Project** 页面配置构建参数：
    - **Framework Preset**：选择 `Vite`。
-   - **Build Command**：开启覆盖并设置为 `npm run build`（或 `npx vp build`）。
+   - **Install Command**：`bun install`
+   - **Build Command**：`bun run build`
    - **Output Directory**：`dist`。
 4. 点击 **Deploy** 开始部署。
 5. **绑定自定义域名**：
@@ -169,16 +166,13 @@ Vercel 提供了优秀的零配置 Vue 3 部署体验。
 
 ### 3. 部署至 Netlify
 
-Netlify 同样是一款高效的静态托管平台。
-
-> [!WARNING]
-> 与 Vercel 类似，Netlify 构建容器也无全局 `vp` 变量。**请确保将构建命令设为 `npm run build` 或 `npx vp build`**。
+Netlify 同样支持 Bun 构建环境。
 
 #### 步骤：
 1. 登录 [Netlify 官网](https://www.netlify.com/)。
 2. 点击 **Add new site** -> **Import an existing project**，选择 GitHub 并导入 `bbylw/pvue` 仓库。
 3. 确认以下构建参数：
-   - **Build command**：`npm run build`（或 `npx vp build`）。
+   - **Build command**：`bun run build`
    - **Publish directory**：`dist`。
 4. 点击 **Deploy site** 启动构建。
 5. **绑定自定义域名**：
@@ -191,28 +185,24 @@ Netlify 同样是一款高效的静态托管平台。
 
 依托 Cloudflare 全球 CDN 的极速静态资源加载平台。
 
-> [!WARNING]
-> 请务必检查 Cloudflare Pages 中的构建命令配置，**确保其为 `npm run build` 或 `npx vp build`**，不要使用默认的 `vite build`，以保证正确启用 Vite+ 的打包流程。
-
 #### 步骤：
 1. 登录 [Cloudflare 控制台](https://dash.cloudflare.com/)，在左侧菜单栏选择 **Workers 和 Pages** -> **Pages**。
 2. 点击 **连接到 git** 并选择导入仓库 `bbylw/pvue`。
-3. 选择 **框架预设** 为 **`Vite`**，并覆盖以下配置：
-   - **构建命令**：`npm run build`（或 `npx vp build`）
+3. 选择 **框架预设** 为 **`Vite`**，并配置：
+   - **构建命令**：`bun run build`
    - **输出目录**：`dist`
+   - **环境变量**：添加 `BUN_VERSION=1.4.4`（或最新版本）
 4. 点击 **保存并部署**。
 5. **绑定自定义域名**：
    - 构建成功后，点击 **自定义域** 选项卡。
-   - 输入 `pvue.ndjp.net`，根据指引通过 CNAME 接入 Cloudflare（若域名本身就在 CF 托管，一键即可激活）。
+   - 输入 `pvue.ndjp.net`，根据指引通过 CNAME 接入 Cloudflare。
 
 ---
 
 ## 🔧 技术选型生态
 
+- **运行时与包管理器**：[Bun](https://bun.sh) (v1.4.4 最新发行版)
+- **构建工具**：[Vite](https://vite.dev) 8.3.5 (Rolldown 内核)
 - **核心视图框架**：Vue 3.5.44
-- **前端工具链**：[Vite+](https://github.com/voidzero-dev/vite-plus) (`vite-plus@1.1.0`)
-- **底层编译器生态**：
-  - **Rolldown**：基于 Rust 的极速打包器（打包产物位于 `dist/`，耗时 ~145ms）
-  - **Oxlint & Oxfmt**：基于 Rust 的超快 Linter & Formatter
 - **样式方案**：原生 CSS 响应式布局
 - **图标集**：FontAwesome Free (v7.3.1)
